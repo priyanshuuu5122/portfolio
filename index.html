@@ -62,6 +62,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 14px 0;
+      position: relative;
     }
 
     .brand {
@@ -97,6 +98,40 @@
       gap: 10px;
       flex-wrap: wrap;
       justify-content: flex-end;
+    }
+
+    .menu-toggle {
+      display: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid rgba(93, 231, 214, 0.35);
+      background: rgba(16, 24, 51, 0.82);
+      color: #dff7ff;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .menu-toggle:hover {
+      box-shadow: 0 0 0 1px rgba(93, 231, 214, 0.22), 0 0 14px rgba(93, 231, 214, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .menu-toggle .bars {
+      width: 20px;
+      height: 14px;
+      display: inline-flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .menu-toggle .bars span {
+      display: block;
+      height: 2px;
+      border-radius: 2px;
+      background: currentColor;
     }
 
     .menu a {
@@ -972,6 +1007,35 @@
     }
 
     @media (max-width: 940px) {
+      .menu-toggle {
+        display: inline-flex;
+      }
+
+      .menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        left: 0;
+        display: none;
+        flex-direction: column;
+        gap: 6px;
+        padding: 10px;
+        border: 1px solid rgba(40, 52, 95, 0.9);
+        border-radius: 12px;
+        background: rgba(10, 15, 31, 0.97);
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+        z-index: 35;
+      }
+
+      .menu.open {
+        display: flex;
+      }
+
+      .menu a {
+        width: 100%;
+        text-align: left;
+      }
+
       .home-about-grid,
       .grid-2 {
         grid-template-columns: 1fr;
@@ -1003,10 +1067,9 @@
         grid-template-columns: 1fr;
       }
 
-      .nav {
-        align-items: start;
-        gap: 10px;
-        flex-direction: column;
+      .menu-toggle {
+        width: 40px;
+        height: 40px;
       }
     }
   </style>
@@ -1015,7 +1078,14 @@
   <header class="topbar">
     <div class="container nav">
       <div class="brand"><span class="accent">PR</span> <span class="label">Portfolio</span></div>
-      <nav class="menu">
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="siteMenu">
+        <span class="bars">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </button>
+      <nav class="menu" id="siteMenu">
         <a href="#home">Home</a>
         <a href="#skills">Skills</a>
         <a href="#projects">Projects</a>
@@ -1464,6 +1534,43 @@
         if (!validateEmailField()) {
           event.preventDefault();
           emailInput.focus();
+        }
+      });
+    }
+
+    const menuToggle = document.getElementById("menuToggle");
+    const siteMenu = document.getElementById("siteMenu");
+
+    function closeMenu() {
+      if (!siteMenu || !menuToggle) return;
+      siteMenu.classList.remove("open");
+      menuToggle.setAttribute("aria-expanded", "false");
+    }
+
+    if (menuToggle && siteMenu) {
+      menuToggle.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const nowOpen = !siteMenu.classList.contains("open");
+        siteMenu.classList.toggle("open", nowOpen);
+        menuToggle.setAttribute("aria-expanded", String(nowOpen));
+      });
+
+      siteMenu.querySelectorAll('a[href^="#"]').forEach((link) => {
+        link.addEventListener("click", () => {
+          closeMenu();
+        });
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!siteMenu.classList.contains("open")) return;
+        if (!siteMenu.contains(event.target) && !menuToggle.contains(event.target)) {
+          closeMenu();
+        }
+      });
+
+      window.addEventListener("resize", () => {
+        if (window.innerWidth > 940) {
+          closeMenu();
         }
       });
     }
